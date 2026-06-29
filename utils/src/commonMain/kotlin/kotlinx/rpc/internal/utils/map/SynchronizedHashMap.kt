@@ -46,14 +46,19 @@ internal class SynchronizedHashMap<K : Any, V: Any> : RpcInternalConcurrentHashM
         map.containsKey(key)
     }
 
+    // Each accessor returns a snapshot taken under the lock, never a live view of the backing
+    // map: a live `HashMap` view is invalidated by any later structural modification and is unsafe
+    // to iterate while another thread mutates the map (ConcurrentModificationException / torn reads
+    // on Native, where this is the actual RpcInternalConcurrentHashMap). Safe locked iteration that
+    // must avoid copying is available via withKeys.
     override val entries: Set<RpcInternalConcurrentHashMap.Entry<K, V>>
-        get() = synchronized(this) { map.entries }.map { RpcInternalConcurrentHashMap.Entry(it.key, it.value) }.toSet()
+        get() = synchronized(this) { map.entries.map { RpcInternalConcurrentHashMap.Entry(it.key, it.value) }.toSet() }
 
     override val keys: Collection<K>
-        get() = synchronized(this) { map.keys }
+        get() = synchronized(this) { map.keys.toList() }
 
     override val values: Collection<V>
-        get() = synchronized(this) { map.values }
+        get() = synchronized(this) { map.values.toList() }
 
     override fun <T> withKeys(block: (Set<K>) -> T): T {
         synchronized(this) {
