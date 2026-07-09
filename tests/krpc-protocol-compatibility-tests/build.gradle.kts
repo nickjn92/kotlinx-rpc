@@ -24,6 +24,7 @@ dependencies {
     testImplementation(projects.krpc.krpcServer)
     testImplementation(projects.krpc.krpcClient)
     testImplementation(projects.krpc.krpcSerialization.krpcSerializationJson)
+    testImplementation(projects.krpc.krpcCompressionZstd)
     testImplementation(projects.tests.testUtils)
 
     testImplementation(libs.coroutines.test)

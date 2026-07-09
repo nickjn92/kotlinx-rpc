@@ -1,0 +1,21 @@
+// Klib ABI Dump
+// Targets: [iosArm64, iosSimulatorArm64, iosX64, linuxArm64, linuxX64, macosArm64, mingwX64, tvosArm64, tvosSimulatorArm64]
+// Rendering settings:
+// - Signature version: 2
+// - Show manifest properties: true
+// - Show declarations: true
+
+// Library unique name: <org.jetbrains.kotlinx:krpc-compression-zstd>
+final class kotlinx.rpc.krpc.compression.zstd/ZstdKrpcMessageCodec : kotlinx.rpc.krpc/KrpcMessageCodec { // kotlinx.rpc.krpc.compression.zstd/ZstdKrpcMessageCodec|null[0]
+    constructor <init>(kotlin/Int = ...) // kotlinx.rpc.krpc.compression.zstd/ZstdKrpcMessageCodec.<init>|<init>(kotlin.Int){}[0]
+
+    final val compressionLevel // kotlinx.rpc.krpc.compression.zstd/ZstdKrpcMessageCodec.compressionLevel|{}compressionLevel[0]
+        final fun <get-compressionLevel>(): kotlin/Int // kotlinx.rpc.krpc.compression.zstd/ZstdKrpcMessageCodec.compressionLevel.<get-compressionLevel>|<get-compressionLevel>(){}[0]
+    final val name // kotlinx.rpc.krpc.compression.zstd/ZstdKrpcMessageCodec.name|{}name[0]
+        final fun <get-name>(): kotlin/String // kotlinx.rpc.krpc.compression.zstd/ZstdKrpcMessageCodec.name.<get-name>|<get-name>(){}[0]
+
+    final suspend fun compress(kotlin/ByteArray): kotlin/ByteArray // kotlinx.rpc.krpc.compression.zstd/ZstdKrpcMessageCodec.compress|compress(kotlin.ByteArray){}[0]
+    final suspend fun decompress(kotlin/ByteArray, kotlin/Int): kotlin/ByteArray // kotlinx.rpc.krpc.compression.zstd/ZstdKrpcMessageCodec.decompress|decompress(kotlin.ByteArray;kotlin.Int){}[0]
+}
+
+final fun (kotlinx.rpc.krpc/KrpcConfigBuilder.Connector).kotlinx.rpc.krpc.compression.zstd/zstd(kotlin/Int = ..., kotlin/Int = ..., kotlin/Int = ...) // kotlinx.rpc.krpc.compression.zstd/zstd|zstd@kotlinx.rpc.krpc.KrpcConfigBuilder.Connector(kotlin.Int;kotlin.Int;kotlin.Int){}[0]

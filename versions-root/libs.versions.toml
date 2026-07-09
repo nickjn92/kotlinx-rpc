@@ -46,6 +46,7 @@ protobuf = "4.35.1"
 buf-tool = "1.71.0"
 agp = "8.4.0"
 test-retry = "1.5.9"
+zstd-kmp = "0.4.0"
 
 [libraries]
 # kotlinx.rpc – references to the included builds
@@ -144,6 +145,7 @@ atomicfu = { module = "org.jetbrains.kotlinx:atomicfu", version.ref = "atomicfu"
 develocity = { module = "com.gradle:develocity-gradle-plugin", version.ref = "develocity" }
 common-custom-user-data = { module = "com.gradle:common-custom-user-data-gradle-plugin", version.ref = "common-custom-user-data" }
 lincheck = { module = "org.jetbrains.lincheck:lincheck", version.ref = "lincheck" }
+zstd-kmp = { module = "com.squareup.zstd:zstd-kmp", version.ref = "zstd-kmp" }
 
 # gradle plugins as lib deps
 detekt-gradle-plugin = { module = "io.gitlab.arturbosch.detekt:detekt-gradle-plugin", version.ref = "detekt-gradle-plugin" }

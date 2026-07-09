@@ -6,6 +6,7 @@ package kotlinx.rpc.krpc.internal
 
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
@@ -14,17 +15,22 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withPermit
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
 import kotlinx.rpc.internal.internalRpcError
 import kotlinx.rpc.internal.utils.InternalRpcApi
 import kotlinx.rpc.internal.utils.map.RpcInternalConcurrentHashMap
 import kotlinx.rpc.krpc.KrpcConfig
+import kotlinx.rpc.krpc.KrpcMessageCompression
 import kotlinx.rpc.krpc.KrpcTransport
 import kotlinx.rpc.krpc.KrpcTransportMessage
 import kotlinx.rpc.krpc.internal.logging.RpcInternalCommonLogger
 import kotlinx.rpc.krpc.internal.logging.RpcInternalDumpLoggerContainer
 import kotlinx.rpc.krpc.receiveCatching
 import kotlinx.serialization.*
+import kotlin.coroutines.cancellation.CancellationException
 
 @InternalRpcApi
 public interface KrpcMessageSender {
@@ -79,6 +85,8 @@ public class KrpcConnector(
     private var sendBufferSize: Int? = null
 
     private var peerSupportsBackPressure = false
+    private var peerMessageCompression: KrpcMessageCompression? = null
+    private var peerMaxDecompressedMessageSize: Int? = null
 
     private val dumpLogger by lazy { RpcInternalDumpLoggerContainer.provide() }
 
@@ -90,17 +98,15 @@ public class KrpcConnector(
     }
 
     override suspend fun sendMessage(message: KrpcMessage) {
-        if (message is KrpcProtocolMessage.Handshake) {
-            message.pluginParams[KrpcPluginKey.WINDOW_UPDATE] = "${config.perCallBufferSize}"
-        }
+        val messageToSend = prepareMessage(message)
 
-        val transportMessage = when (serialFormat) {
+        val serializedMessage = when (serialFormat) {
             is StringFormat -> {
-                KrpcTransportMessage.StringMessage(serialFormat.encodeToString(message))
+                KrpcTransportMessage.StringMessage(serialFormat.encodeToString(messageToSend))
             }
 
             is BinaryFormat -> {
-                KrpcTransportMessage.BinaryMessage(serialFormat.encodeToByteArray(message))
+                KrpcTransportMessage.BinaryMessage(serialFormat.encodeToByteArray(messageToSend))
             }
 
             else -> {
@@ -108,11 +114,57 @@ public class KrpcConnector(
             }
         }
 
+        // dumped before compression, so the dump stays human-readable
         if (dumpLogger.isEnabled) {
-            dumpLogger.dump(role, SEND_PHASE) { transportMessage.dump() }
+            dumpLogger.dump(role, SEND_PHASE) { serializedMessage.dump() }
         }
 
-        sendTransportMessage(message.handlerKey(), transportMessage)
+        val transportMessage = serializedMessage.compressIfNeeded(messageToSend)
+
+        sendTransportMessage(messageToSend.handlerKey(), transportMessage)
+    }
+
+    private fun prepareMessage(message: KrpcMessage): KrpcMessage {
+        if (message !is KrpcProtocolMessage.Handshake) {
+            return message
+        }
+
+        val pluginParams = message.pluginParams.toMutableMap()
+        pluginParams[KrpcPluginKey.WINDOW_UPDATE] = "${config.perCallBufferSize}"
+        val compression = config.messageCompression
+            ?: return message.copy(pluginParams = pluginParams)
+
+        pluginParams[KrpcPluginKey.MESSAGE_COMPRESSION] = compression.codec.name
+        pluginParams[KrpcPluginKey.MESSAGE_COMPRESSION_MAX_SIZE] = "${compression.maxDecompressedMessageSize}"
+        pluginParams[KrpcPluginKey.MESSAGE_COMPRESSION_ENVELOPE_VERSION] = "$COMPRESSED_MESSAGE_ENVELOPE_VERSION"
+
+        return message.copy(
+            supportedPlugins = message.supportedPlugins + KrpcPlugin.MESSAGE_COMPRESSION,
+            pluginParams = pluginParams,
+        )
+    }
+
+    private suspend fun KrpcTransportMessage.compressIfNeeded(message: KrpcMessage): KrpcTransportMessage {
+        if (message is KrpcProtocolMessage.Handshake) {
+            return this
+        }
+
+        val compression = peerMessageCompression ?: return this
+
+        return try {
+            withContext(Dispatchers.Default) {
+                compressWith(compression, peerMaxDecompressedMessageSize)
+            }
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: KrpcCompressionException) {
+            // the raw message would be misparsed as an envelope by the peer, sending must fail
+            throw e
+        } catch (e: Exception) {
+            // compression is best-effort, peers accept uncompressed messages regardless of negotiation
+            logger.error(e) { "Failed to compress a message, sending it uncompressed" }
+            this
+        }
     }
 
     private suspend fun sendTransportMessage(key: HandlerKey<*>, message: KrpcTransportMessage) {
@@ -289,7 +341,9 @@ public class KrpcConnector(
 
         transportScope.launch(CoroutineName("krpc-connector-receive-loop")) {
             while (true) {
-                processMessage(transport.receiveCatching().getOrNull() ?: break)
+                val raw = transport.receiveCatching().getOrNull() ?: break
+
+                processMessage(decodeTransportMessage(raw) ?: continue)
             }
         }
 
@@ -299,6 +353,37 @@ public class KrpcConnector(
             serviceSubscriptions.clear()
             sendHandlers.clear()
         }
+    }
+
+    private class DecodedTransportMessage(
+        val transportMessage: KrpcTransportMessage,
+        val message: KrpcMessage,
+    )
+
+    private suspend fun decodeTransportMessage(raw: KrpcTransportMessage): DecodedTransportMessage? {
+        val compression = peerMessageCompression
+        if (compression == null || !raw.isCompressedEnvelope()) {
+            return deserializeTransportMessage(raw)
+        }
+
+        return compressedMessageDecodeSemaphore.withPermit {
+            try {
+                withContext(Dispatchers.Default) {
+                    deserializeTransportMessage(raw.decompressWith(compression))
+                }
+            } catch (e: KrpcCompressionException) {
+                logger.error(e) { "Failed to decode compressed transport message" }
+                logger.debug { "Invalid message: ${raw.dump()}" }
+                transportScope.cancel("Failed to decode compressed transport message", e)
+                throw e
+            }
+        }
+    }
+
+    private fun deserializeTransportMessage(transportMessage: KrpcTransportMessage): DecodedTransportMessage? {
+        val message = decodeMessage(transportMessage) ?: return null
+
+        return DecodedTransportMessage(transportMessage, message)
     }
 
     private fun decodeMessage(transportMessage: KrpcTransportMessage): KrpcMessage? {
@@ -333,14 +418,13 @@ public class KrpcConnector(
         return null
     }
 
-    private suspend fun processMessage(transportMessage: KrpcTransportMessage) {
-        val message = decodeMessage(transportMessage) ?: return
-
+    private suspend fun processMessage(decoded: DecodedTransportMessage) {
+        // dumped after decompression, so the dump stays human-readable
         if (dumpLogger.isEnabled) {
-            dumpLogger.dump(role, RECEIVE_PHASE) { transportMessage.dump() }
+            dumpLogger.dump(role, RECEIVE_PHASE) { decoded.transportMessage.dump() }
         }
 
-        processMessage(message, message.handlerKey())
+        processMessage(decoded.message, decoded.message.handlerKey())
     }
 
     private suspend fun processMessage(message: KrpcMessage, key: HandlerKey<*>) {
@@ -386,6 +470,8 @@ public class KrpcConnector(
     private suspend fun processNonServiceMessage(message: KrpcMessage, key: HandlerKey<*>) {
         // should be the first message we receive
         if (message is KrpcProtocolMessage.Handshake) {
+            updatePeerMessageCompression(message)
+
             if (message.supportedPlugins.contains(KrpcPlugin.BACKPRESSURE)) {
                 peerSupportsBackPressure = true
 
@@ -441,6 +527,32 @@ public class KrpcConnector(
         }?.onClosed {
             // do nothing; it's a service message, meaning that the service is dead
         }
+    }
+
+    private fun updatePeerMessageCompression(message: KrpcProtocolMessage.Handshake) {
+        val localCompression = config.messageCompression ?: return
+
+        val peerCompressionName = message.pluginParams[KrpcPluginKey.MESSAGE_COMPRESSION]
+
+        // absent means the peer predates envelope versioning and accepts the initial version
+        val peerEnvelopeVersionParameter = message.pluginParams[KrpcPluginKey.MESSAGE_COMPRESSION_ENVELOPE_VERSION]
+        val peerEnvelopeVersion = if (peerEnvelopeVersionParameter == null) {
+            COMPRESSED_MESSAGE_ENVELOPE_VERSION.toInt()
+        } else {
+            peerEnvelopeVersionParameter.toIntOrNull()
+        }
+        val peerMaxSizeParameter = message.pluginParams[KrpcPluginKey.MESSAGE_COMPRESSION_MAX_SIZE]
+        val peerMaxSize = peerMaxSizeParameter?.toIntOrNull()
+        val hasValidPeerMaxSize = peerMaxSizeParameter == null || (peerMaxSize != null && peerMaxSize > 0)
+
+        val negotiated = message.supportedPlugins.contains(KrpcPlugin.MESSAGE_COMPRESSION) &&
+                peerCompressionName == localCompression.codec.name &&
+                peerEnvelopeVersion != null &&
+                peerEnvelopeVersion >= COMPRESSED_MESSAGE_ENVELOPE_VERSION &&
+                hasValidPeerMaxSize
+
+        peerMessageCompression = if (negotiated) localCompression else null
+        peerMaxDecompressedMessageSize = if (negotiated) peerMaxSize else null
     }
 
     private suspend fun processServiceMessage(message: KrpcCallMessage, key: HandlerKey<KrpcCallMessage>) {
@@ -555,6 +667,10 @@ public class KrpcConnector(
 
         const val SERVER_ROLE = "Server"
         const val CLIENT_ROLE = "Client"
+
+        // Bound aggregate decode memory without letting one slow peer block every other connection.
+        private const val MAX_CONCURRENT_COMPRESSED_MESSAGE_DECODES = 2
+        private val compressedMessageDecodeSemaphore = Semaphore(MAX_CONCURRENT_COMPRESSED_MESSAGE_DECODES)
 
         @OptIn(ExperimentalStdlibApi::class)
         private fun KrpcTransportMessage.dump(): String {

@@ -59,6 +59,8 @@ kotlin {
                 implementation(libs.logback.classic)
                 implementation(libs.coroutines.debug)
                 implementation(libs.lincheck)
+                // jvmTest only: the zstd module supports fewer targets than krpc-test's common source sets
+                implementation(projects.krpc.krpcCompressionZstd)
             }
         }
     }

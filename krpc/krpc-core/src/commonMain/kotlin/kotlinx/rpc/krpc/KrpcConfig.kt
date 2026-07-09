@@ -84,6 +84,13 @@ public sealed class KrpcConfigBuilder protected constructor() {
          * This buffer also applies to how many messages are cached with [waitTimeout].
          */
         public var perCallBufferSize: Int = 1000
+
+        /**
+         * Compression for serialized kRPC transport messages.
+         *
+         * Messages are compressed only when the peer configures a codec with the same name.
+         */
+        public var messageCompression: KrpcMessageCompression? = null
     }
 
     @Deprecated("Use connector { } instead", level = DeprecationLevel.ERROR)
@@ -126,7 +133,12 @@ public sealed class KrpcConfigBuilder protected constructor() {
     private val connector = Connector()
 
     public fun buildConnector(): KrpcConfig.Connector {
-        return KrpcConfig.Connector(connector.waitTimeout, connector.callTimeout, connector.perCallBufferSize)
+        return KrpcConfig.Connector(
+            waitTimeout = connector.waitTimeout,
+            callTimeout = connector.callTimeout,
+            perCallBufferSize = connector.perCallBufferSize,
+            messageCompression = connector.messageCompression,
+        )
     }
 
     private val configuration = object : KrpcSerialFormatConfiguration {
@@ -182,6 +194,11 @@ public sealed interface KrpcConfig {
          * @see KrpcConfigBuilder.Connector.perCallBufferSize
          */
         public val perCallBufferSize: Int,
+
+        /**
+         * @see KrpcConfigBuilder.Connector.messageCompression
+         */
+        public val messageCompression: KrpcMessageCompression?,
     ) {
         init {
             require(perCallBufferSize != 0) { "perCallBufferSize must not be zero" }

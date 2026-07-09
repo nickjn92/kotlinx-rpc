@@ -4,6 +4,9 @@ org.jetbrains.kotlinx:kotlinx-rpc-core-mingwx64/sources.jar
 org.jetbrains.kotlinx:kotlinx-rpc-krpc-client-mingwx64/.klib
 org.jetbrains.kotlinx:kotlinx-rpc-krpc-client-mingwx64/javadoc.jar
 org.jetbrains.kotlinx:kotlinx-rpc-krpc-client-mingwx64/sources.jar
+org.jetbrains.kotlinx:kotlinx-rpc-krpc-compression-zstd-mingwx64/.klib
+org.jetbrains.kotlinx:kotlinx-rpc-krpc-compression-zstd-mingwx64/javadoc.jar
+org.jetbrains.kotlinx:kotlinx-rpc-krpc-compression-zstd-mingwx64/sources.jar
 org.jetbrains.kotlinx:kotlinx-rpc-krpc-core-mingwx64/.klib
 org.jetbrains.kotlinx:kotlinx-rpc-krpc-core-mingwx64/javadoc.jar
 org.jetbrains.kotlinx:kotlinx-rpc-krpc-core-mingwx64/sources.jar

@@ -21,6 +21,13 @@ import kotlinx.rpc.krpc.test.compat.TestConfig
 import kotlinx.rpc.registerService
 import kotlinx.rpc.withService
 import kotlin.coroutines.CoroutineContext
+//##csm compression-import
+//##csm default
+import kotlinx.rpc.krpc.compression.zstd.zstd
+//##csm /default
+//##csm specific=[0.8.1, 0.9.1, 0.10.1]
+//##csm /specific
+//##csm /compression-import
 
 fun CompatTransport.toKrpc(): KrpcTransport {
     return object : KrpcTransport {
@@ -52,8 +59,14 @@ class TestStarter_<rpc-version> : Starter {
             //##csm default
             connector {
                 perCallBufferSize = config.perCallBufferSize
+                zstd()
             }
             //##csm /default
+            //##csm specific=[0.10.1]
+            connector {
+                perCallBufferSize = config.perCallBufferSize
+            }
+            //##csm /specific
             //##csm specific=[0.8.1, 0.9.1]
             //##csm /specific
             //##csm /connector-API-client
@@ -112,8 +125,14 @@ class TestStarter_<rpc-version> : Starter {
             //##csm default
             connector {
                 perCallBufferSize = config.perCallBufferSize
+                zstd()
             }
             //##csm /default
+            //##csm specific=[0.10.1]
+            connector {
+                perCallBufferSize = config.perCallBufferSize
+            }
+            //##csm /specific
             //##csm specific=[0.8.1, 0.9.1]
             //##csm /specific
             //##csm /connector-API-server

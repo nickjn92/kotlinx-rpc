@@ -1,0 +1,14 @@
+public final class kotlinx/rpc/krpc/compression/zstd/KrpcZstdCompressionKt {
+	public static final fun zstd (Lkotlinx/rpc/krpc/KrpcConfigBuilder$Connector;III)V
+	public static synthetic fun zstd$default (Lkotlinx/rpc/krpc/KrpcConfigBuilder$Connector;IIIILjava/lang/Object;)V
+}
+
+public final class kotlinx/rpc/krpc/compression/zstd/ZstdKrpcMessageCodec : kotlinx/rpc/krpc/KrpcMessageCodec {
+	public fun <init> ()V
+	public fun <init> (I)V
+	public synthetic fun <init> (IILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun compress ([BLkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun decompress ([BILkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun getCompressionLevel ()I
+	public fun getName ()Ljava/lang/String;
+}

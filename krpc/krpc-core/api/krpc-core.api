@@ -12,6 +12,7 @@ public final class kotlinx/rpc/krpc/KrpcConfig$Client : kotlinx/rpc/krpc/KrpcCon
 
 public final class kotlinx/rpc/krpc/KrpcConfig$Connector {
 	public final fun getCallTimeout-UwyO8pc ()J
+	public final fun getMessageCompression ()Lkotlinx/rpc/krpc/KrpcMessageCompression;
 	public final fun getPerCallBufferSize ()I
 	public final fun getWaitTimeout-UwyO8pc ()J
 }
@@ -44,9 +45,11 @@ public final class kotlinx/rpc/krpc/KrpcConfigBuilder$Connector {
 	public fun <init> ()V
 	public final fun dontWait-UwyO8pc ()J
 	public final fun getCallTimeout-UwyO8pc ()J
+	public final fun getMessageCompression ()Lkotlinx/rpc/krpc/KrpcMessageCompression;
 	public final fun getPerCallBufferSize ()I
 	public final fun getWaitTimeout-UwyO8pc ()J
 	public final fun setCallTimeout-LRDsOJo (J)V
+	public final fun setMessageCompression (Lkotlinx/rpc/krpc/KrpcMessageCompression;)V
 	public final fun setPerCallBufferSize (I)V
 	public final fun setWaitTimeout-LRDsOJo (J)V
 }
@@ -61,6 +64,26 @@ public final class kotlinx/rpc/krpc/KrpcConfigKt {
 	public static synthetic fun rpcClientConfig$default (Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lkotlinx/rpc/krpc/KrpcConfig$Client;
 	public static final fun rpcServerConfig (Lkotlin/jvm/functions/Function1;)Lkotlinx/rpc/krpc/KrpcConfig$Server;
 	public static synthetic fun rpcServerConfig$default (Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lkotlinx/rpc/krpc/KrpcConfig$Server;
+}
+
+public abstract interface class kotlinx/rpc/krpc/KrpcMessageCodec {
+	public abstract fun compress ([BLkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun decompress ([BILkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun getName ()Ljava/lang/String;
+}
+
+public final class kotlinx/rpc/krpc/KrpcMessageCompression {
+	public static final field Companion Lkotlinx/rpc/krpc/KrpcMessageCompression$Companion;
+	public static final field DEFAULT_MAX_DECOMPRESSED_MESSAGE_SIZE I
+	public static final field DEFAULT_MINIMUM_MESSAGE_SIZE I
+	public fun <init> (Lkotlinx/rpc/krpc/KrpcMessageCodec;II)V
+	public synthetic fun <init> (Lkotlinx/rpc/krpc/KrpcMessageCodec;IIILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getCodec ()Lkotlinx/rpc/krpc/KrpcMessageCodec;
+	public final fun getMaxDecompressedMessageSize ()I
+	public final fun getMinimumMessageSize ()I
+}
+
+public final class kotlinx/rpc/krpc/KrpcMessageCompression$Companion {
 }
 
 public abstract interface class kotlinx/rpc/krpc/KrpcTransport : kotlinx/coroutines/CoroutineScope {

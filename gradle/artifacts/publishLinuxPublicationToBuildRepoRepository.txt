@@ -46,6 +46,12 @@ org.jetbrains.kotlinx:kotlinx-rpc-krpc-client-linuxarm64/sources.jar
 org.jetbrains.kotlinx:kotlinx-rpc-krpc-client-linuxx64/.klib
 org.jetbrains.kotlinx:kotlinx-rpc-krpc-client-linuxx64/javadoc.jar
 org.jetbrains.kotlinx:kotlinx-rpc-krpc-client-linuxx64/sources.jar
+org.jetbrains.kotlinx:kotlinx-rpc-krpc-compression-zstd-linuxarm64/.klib
+org.jetbrains.kotlinx:kotlinx-rpc-krpc-compression-zstd-linuxarm64/javadoc.jar
+org.jetbrains.kotlinx:kotlinx-rpc-krpc-compression-zstd-linuxarm64/sources.jar
+org.jetbrains.kotlinx:kotlinx-rpc-krpc-compression-zstd-linuxx64/.klib
+org.jetbrains.kotlinx:kotlinx-rpc-krpc-compression-zstd-linuxx64/javadoc.jar
+org.jetbrains.kotlinx:kotlinx-rpc-krpc-compression-zstd-linuxx64/sources.jar
 org.jetbrains.kotlinx:kotlinx-rpc-krpc-core-linuxarm64/.klib
 org.jetbrains.kotlinx:kotlinx-rpc-krpc-core-linuxarm64/javadoc.jar
 org.jetbrains.kotlinx:kotlinx-rpc-krpc-core-linuxarm64/sources.jar

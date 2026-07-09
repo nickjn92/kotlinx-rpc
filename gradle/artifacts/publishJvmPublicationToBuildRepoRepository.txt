@@ -22,6 +22,9 @@ org.jetbrains.kotlinx:kotlinx-rpc-grpc-server-jvm/sources.jar
 org.jetbrains.kotlinx:kotlinx-rpc-krpc-client-jvm/.jar
 org.jetbrains.kotlinx:kotlinx-rpc-krpc-client-jvm/javadoc.jar
 org.jetbrains.kotlinx:kotlinx-rpc-krpc-client-jvm/sources.jar
+org.jetbrains.kotlinx:kotlinx-rpc-krpc-compression-zstd-jvm/.jar
+org.jetbrains.kotlinx:kotlinx-rpc-krpc-compression-zstd-jvm/javadoc.jar
+org.jetbrains.kotlinx:kotlinx-rpc-krpc-compression-zstd-jvm/sources.jar
 org.jetbrains.kotlinx:kotlinx-rpc-krpc-core-jvm/.jar
 org.jetbrains.kotlinx:kotlinx-rpc-krpc-core-jvm/javadoc.jar
 org.jetbrains.kotlinx:kotlinx-rpc-krpc-core-jvm/sources.jar

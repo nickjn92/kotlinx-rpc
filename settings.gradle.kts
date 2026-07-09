@@ -56,6 +56,8 @@ includePublic(":krpc:krpc-server")
 includePublic(":krpc:krpc-logging")
 include(":krpc:krpc-test")
 
+includePublic(":krpc:krpc-compression-zstd")
+
 include(":krpc:krpc-serialization")
 includePublic(":krpc:krpc-serialization:krpc-serialization-core")
 includePublic(":krpc:krpc-serialization:krpc-serialization-json")

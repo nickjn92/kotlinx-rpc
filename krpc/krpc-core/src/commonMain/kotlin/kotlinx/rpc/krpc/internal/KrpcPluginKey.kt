@@ -61,6 +61,24 @@ public enum class KrpcPluginKey(
      * Represents the call id of the current [WINDOW_UPDATE].
      */
     WINDOW_KEY(7, KrpcPlugin.BACKPRESSURE),
+
+    /**
+     * Represents the message compression codec name.
+     */
+    MESSAGE_COMPRESSION(8, KrpcPlugin.MESSAGE_COMPRESSION),
+
+    /**
+     * Represents the maximum decompressed message size in bytes accepted by the sending endpoint.
+     * Peers don't compress messages that would decompress beyond this limit.
+     */
+    MESSAGE_COMPRESSION_MAX_SIZE(9, KrpcPlugin.MESSAGE_COMPRESSION),
+
+    /**
+     * Represents the maximum compressed message envelope version accepted by the sending endpoint.
+     * Peers must not send envelopes with a higher version and disable compression
+     * when they can't produce an acceptable one.
+     */
+    MESSAGE_COMPRESSION_ENVELOPE_VERSION(10, KrpcPlugin.MESSAGE_COMPRESSION),
     ;
 
     init {

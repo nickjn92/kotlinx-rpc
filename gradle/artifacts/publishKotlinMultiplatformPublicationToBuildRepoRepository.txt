@@ -30,6 +30,10 @@ org.jetbrains.kotlinx:kotlinx-rpc-krpc-client/.jar
 org.jetbrains.kotlinx:kotlinx-rpc-krpc-client/javadoc.jar
 org.jetbrains.kotlinx:kotlinx-rpc-krpc-client/kotlin-tooling-metadata.json
 org.jetbrains.kotlinx:kotlinx-rpc-krpc-client/sources.jar
+org.jetbrains.kotlinx:kotlinx-rpc-krpc-compression-zstd/.jar
+org.jetbrains.kotlinx:kotlinx-rpc-krpc-compression-zstd/javadoc.jar
+org.jetbrains.kotlinx:kotlinx-rpc-krpc-compression-zstd/kotlin-tooling-metadata.json
+org.jetbrains.kotlinx:kotlinx-rpc-krpc-compression-zstd/sources.jar
 org.jetbrains.kotlinx:kotlinx-rpc-krpc-core/.jar
 org.jetbrains.kotlinx:kotlinx-rpc-krpc-core/javadoc.jar
 org.jetbrains.kotlinx:kotlinx-rpc-krpc-core/kotlin-tooling-metadata.json

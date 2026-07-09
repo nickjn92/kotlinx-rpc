@@ -33,6 +33,16 @@ class KrpcProtocolCompatibilityTests : KrpcProtocolCompatibilityTestsBase() {
     }
 
     @TestFactory
+    fun compressionFallback() = matrixTest { service, _ ->
+        // the Latest endpoint advertises message compression in its handshake;
+        // the old peer must ignore the unknown plugin and params, and calls must still work
+        assertEquals(10, service.unary(10))
+        assertEquals(15, service.serverStreaming(5).toList().sum())
+
+        assertNoErrorsInLogs()
+    }
+
+    @TestFactory
     fun serverStreamCalls() = matrixTest { service, _ ->
         assertEquals(1, service.serverStreaming(1).toList().sum())
 

@@ -6,6 +6,14 @@
 // - Show declarations: true
 
 // Library unique name: <org.jetbrains.kotlinx:krpc-core>
+abstract interface kotlinx.rpc.krpc/KrpcMessageCodec { // kotlinx.rpc.krpc/KrpcMessageCodec|null[0]
+    abstract val name // kotlinx.rpc.krpc/KrpcMessageCodec.name|{}name[0]
+        abstract fun <get-name>(): kotlin/String // kotlinx.rpc.krpc/KrpcMessageCodec.name.<get-name>|<get-name>(){}[0]
+
+    abstract suspend fun compress(kotlin/ByteArray): kotlin/ByteArray // kotlinx.rpc.krpc/KrpcMessageCodec.compress|compress(kotlin.ByteArray){}[0]
+    abstract suspend fun decompress(kotlin/ByteArray, kotlin/Int): kotlin/ByteArray // kotlinx.rpc.krpc/KrpcMessageCodec.decompress|decompress(kotlin.ByteArray;kotlin.Int){}[0]
+}
+
 abstract interface kotlinx.rpc.krpc/KrpcTransport : kotlinx.coroutines/CoroutineScope { // kotlinx.rpc.krpc/KrpcTransport|null[0]
     abstract suspend fun receive(): kotlinx.rpc.krpc/KrpcTransportMessage // kotlinx.rpc.krpc/KrpcTransport.receive|receive(){}[0]
     abstract suspend fun send(kotlinx.rpc.krpc/KrpcTransportMessage) // kotlinx.rpc.krpc/KrpcTransport.send|send(kotlinx.rpc.krpc.KrpcTransportMessage){}[0]
@@ -29,6 +37,8 @@ sealed interface kotlinx.rpc.krpc/KrpcConfig { // kotlinx.rpc.krpc/KrpcConfig|nu
     final class Connector { // kotlinx.rpc.krpc/KrpcConfig.Connector|null[0]
         final val callTimeout // kotlinx.rpc.krpc/KrpcConfig.Connector.callTimeout|{}callTimeout[0]
             final fun <get-callTimeout>(): kotlin.time/Duration // kotlinx.rpc.krpc/KrpcConfig.Connector.callTimeout.<get-callTimeout>|<get-callTimeout>(){}[0]
+        final val messageCompression // kotlinx.rpc.krpc/KrpcConfig.Connector.messageCompression|{}messageCompression[0]
+            final fun <get-messageCompression>(): kotlinx.rpc.krpc/KrpcMessageCompression? // kotlinx.rpc.krpc/KrpcConfig.Connector.messageCompression.<get-messageCompression>|<get-messageCompression>(){}[0]
         final val perCallBufferSize // kotlinx.rpc.krpc/KrpcConfig.Connector.perCallBufferSize|{}perCallBufferSize[0]
             final fun <get-perCallBufferSize>(): kotlin/Int // kotlinx.rpc.krpc/KrpcConfig.Connector.perCallBufferSize.<get-perCallBufferSize>|<get-perCallBufferSize>(){}[0]
         final val waitTimeout // kotlinx.rpc.krpc/KrpcConfig.Connector.waitTimeout|{}waitTimeout[0]
@@ -59,6 +69,24 @@ sealed interface kotlinx.rpc.krpc/KrpcTransportMessage { // kotlinx.rpc.krpc/Krp
     }
 }
 
+final class kotlinx.rpc.krpc/KrpcMessageCompression { // kotlinx.rpc.krpc/KrpcMessageCompression|null[0]
+    constructor <init>(kotlinx.rpc.krpc/KrpcMessageCodec, kotlin/Int = ..., kotlin/Int = ...) // kotlinx.rpc.krpc/KrpcMessageCompression.<init>|<init>(kotlinx.rpc.krpc.KrpcMessageCodec;kotlin.Int;kotlin.Int){}[0]
+
+    final val codec // kotlinx.rpc.krpc/KrpcMessageCompression.codec|{}codec[0]
+        final fun <get-codec>(): kotlinx.rpc.krpc/KrpcMessageCodec // kotlinx.rpc.krpc/KrpcMessageCompression.codec.<get-codec>|<get-codec>(){}[0]
+    final val maxDecompressedMessageSize // kotlinx.rpc.krpc/KrpcMessageCompression.maxDecompressedMessageSize|{}maxDecompressedMessageSize[0]
+        final fun <get-maxDecompressedMessageSize>(): kotlin/Int // kotlinx.rpc.krpc/KrpcMessageCompression.maxDecompressedMessageSize.<get-maxDecompressedMessageSize>|<get-maxDecompressedMessageSize>(){}[0]
+    final val minimumMessageSize // kotlinx.rpc.krpc/KrpcMessageCompression.minimumMessageSize|{}minimumMessageSize[0]
+        final fun <get-minimumMessageSize>(): kotlin/Int // kotlinx.rpc.krpc/KrpcMessageCompression.minimumMessageSize.<get-minimumMessageSize>|<get-minimumMessageSize>(){}[0]
+
+    final object Companion { // kotlinx.rpc.krpc/KrpcMessageCompression.Companion|null[0]
+        final const val DEFAULT_MAX_DECOMPRESSED_MESSAGE_SIZE // kotlinx.rpc.krpc/KrpcMessageCompression.Companion.DEFAULT_MAX_DECOMPRESSED_MESSAGE_SIZE|{}DEFAULT_MAX_DECOMPRESSED_MESSAGE_SIZE[0]
+            final fun <get-DEFAULT_MAX_DECOMPRESSED_MESSAGE_SIZE>(): kotlin/Int // kotlinx.rpc.krpc/KrpcMessageCompression.Companion.DEFAULT_MAX_DECOMPRESSED_MESSAGE_SIZE.<get-DEFAULT_MAX_DECOMPRESSED_MESSAGE_SIZE>|<get-DEFAULT_MAX_DECOMPRESSED_MESSAGE_SIZE>(){}[0]
+        final const val DEFAULT_MINIMUM_MESSAGE_SIZE // kotlinx.rpc.krpc/KrpcMessageCompression.Companion.DEFAULT_MINIMUM_MESSAGE_SIZE|{}DEFAULT_MINIMUM_MESSAGE_SIZE[0]
+            final fun <get-DEFAULT_MINIMUM_MESSAGE_SIZE>(): kotlin/Int // kotlinx.rpc.krpc/KrpcMessageCompression.Companion.DEFAULT_MINIMUM_MESSAGE_SIZE.<get-DEFAULT_MINIMUM_MESSAGE_SIZE>|<get-DEFAULT_MINIMUM_MESSAGE_SIZE>(){}[0]
+    }
+}
+
 sealed class kotlinx.rpc.krpc/KrpcConfigBuilder { // kotlinx.rpc.krpc/KrpcConfigBuilder|null[0]
     final var waitForServices // kotlinx.rpc.krpc/KrpcConfigBuilder.waitForServices|{}waitForServices[0]
         final fun <get-waitForServices>(): kotlin/Boolean // kotlinx.rpc.krpc/KrpcConfigBuilder.waitForServices.<get-waitForServices>|<get-waitForServices>(){}[0]
@@ -81,6 +109,9 @@ sealed class kotlinx.rpc.krpc/KrpcConfigBuilder { // kotlinx.rpc.krpc/KrpcConfig
         final var callTimeout // kotlinx.rpc.krpc/KrpcConfigBuilder.Connector.callTimeout|{}callTimeout[0]
             final fun <get-callTimeout>(): kotlin.time/Duration // kotlinx.rpc.krpc/KrpcConfigBuilder.Connector.callTimeout.<get-callTimeout>|<get-callTimeout>(){}[0]
             final fun <set-callTimeout>(kotlin.time/Duration) // kotlinx.rpc.krpc/KrpcConfigBuilder.Connector.callTimeout.<set-callTimeout>|<set-callTimeout>(kotlin.time.Duration){}[0]
+        final var messageCompression // kotlinx.rpc.krpc/KrpcConfigBuilder.Connector.messageCompression|{}messageCompression[0]
+            final fun <get-messageCompression>(): kotlinx.rpc.krpc/KrpcMessageCompression? // kotlinx.rpc.krpc/KrpcConfigBuilder.Connector.messageCompression.<get-messageCompression>|<get-messageCompression>(){}[0]
+            final fun <set-messageCompression>(kotlinx.rpc.krpc/KrpcMessageCompression?) // kotlinx.rpc.krpc/KrpcConfigBuilder.Connector.messageCompression.<set-messageCompression>|<set-messageCompression>(kotlinx.rpc.krpc.KrpcMessageCompression?){}[0]
         final var perCallBufferSize // kotlinx.rpc.krpc/KrpcConfigBuilder.Connector.perCallBufferSize|{}perCallBufferSize[0]
             final fun <get-perCallBufferSize>(): kotlin/Int // kotlinx.rpc.krpc/KrpcConfigBuilder.Connector.perCallBufferSize.<get-perCallBufferSize>|<get-perCallBufferSize>(){}[0]
             final fun <set-perCallBufferSize>(kotlin/Int) // kotlinx.rpc.krpc/KrpcConfigBuilder.Connector.perCallBufferSize.<set-perCallBufferSize>|<set-perCallBufferSize>(kotlin.Int){}[0]

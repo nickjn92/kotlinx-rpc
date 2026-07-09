@@ -63,14 +63,24 @@ public enum class KrpcPlugin(
      * Backpressure mechanism.
      */
     BACKPRESSURE(5, KrpcVersion.V_0_10_0),
+
+    /**
+     * Message compression negotiated during the handshake.
+     */
+    MESSAGE_COMPRESSION(6, KrpcVersion.V_0_11_0),
     ;
 
     @InternalRpcApi
     public companion object {
         /**
-         * A set of all plugins for the current version of the library.
+         * A set of all plugins known by the current version of the library.
          */
-        public val ALL: Set<KrpcPlugin> = KrpcPlugin.entries.toSet() - UNKNOWN
+        public val KNOWN: Set<KrpcPlugin> = KrpcPlugin.entries.toSet() - UNKNOWN
+
+        /**
+         * A set of all plugins enabled without extra configuration for the current version of the library.
+         */
+        public val ALL: Set<KrpcPlugin> = KNOWN - MESSAGE_COMPRESSION
     }
 }
 
@@ -78,5 +88,5 @@ public enum class KrpcPlugin(
 public class KrpcPluginSerializer : RpcInternalShortEnumKSerializer<KrpcPlugin>(
     kClass = KrpcPlugin::class,
     unknownValue = KrpcPlugin.UNKNOWN,
-    allValues = KrpcPlugin.ALL,
+    allValues = KrpcPlugin.KNOWN,
 )

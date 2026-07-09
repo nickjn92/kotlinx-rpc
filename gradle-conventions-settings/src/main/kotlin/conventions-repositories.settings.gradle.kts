@@ -231,6 +231,15 @@ gradle.rootProject {
                 buildDeps()
                 buildDepsEap()
                 buildDepsEapForIde()
+
+                // com.squareup.zstd is not mirrored in the proxy repositories yet,
+                // so it is resolved directly, but only after the proxies were tried.
+                // Remove it once the group is added to build-deps. (KRPC-529)
+                mavenCentral {
+                    content {
+                        includeGroup("com.squareup.zstd")
+                    }
+                }
             } else {
                 mavenCentral()
                 gradlePluginPortal()

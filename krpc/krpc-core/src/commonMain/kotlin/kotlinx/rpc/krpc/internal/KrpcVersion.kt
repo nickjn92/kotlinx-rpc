@@ -12,4 +12,5 @@ internal enum class KrpcVersion {
     V_0_6_0,
     V_0_8_0,
     V_0_10_0,
+    V_0_11_0,
 }

@@ -103,6 +103,12 @@
                 <br/>
                 The default value is <code>1000</code>.
             </li>
+            <li>
+                <code>messageCompression</code> - compression for serialized kRPC messages.
+                See <a anchor="message-compression"/> for details.
+                <br/>
+                The default value is <code>null</code> (compression is disabled).
+            </li>
         </list>
         <p>
             Example:
@@ -116,5 +122,75 @@
                 }
             }
         </code-block>
+        <chapter id="message-compression">
+            <title>Message compression</title>
+            <p>
+                kRPC can compress serialized messages before sending them over the network.
+                Compression is disabled by default and is used only when both endpoints
+                configure a codec with the same name.
+                The codec is negotiated during the connection handshake,
+                so endpoints automatically fall back to uncompressed messages
+                when a peer does not configure a matching codec
+                (for example, when it runs an older version of the library).
+            </p>
+            <p>
+                Zstandard compression is provided by the
+                <code>kotlinx-rpc-krpc-compression-zstd</code> artifact:
+            </p>
+            <code-block lang="kotlin">
+                dependencies {
+                    implementation("org.jetbrains.kotlinx:kotlinx-rpc-krpc-compression-zstd:%kotlinx-rpc-version%")
+                }
+            </code-block>
+            <code-block lang="kotlin">
+                rpcClientConfig {
+                    connector {
+                        zstd()
+                    }
+                }
+            </code-block>
+            <p>
+                The <code>zstd</code> function accepts the following parameters:
+            </p>
+            <list>
+                <li>
+                    <code>minimumMessageSize</code> - minimum serialized message size in bytes
+                    before compression is attempted.
+                    Smaller messages are sent uncompressed,
+                    as are messages that compression does not make smaller.
+                    <br/>
+                    The default value is <code>1024</code>.
+                </li>
+                <li>
+                    <code>maxDecompressedMessageSize</code> - maximum decompressed message size in bytes
+                    accepted from a peer.
+                    The limit is advertised during the handshake,
+                    and peers send larger messages uncompressed instead of exceeding it.
+                    <br/>
+                    The default value is <code>64 * 1024 * 1024</code> (64 MiB).
+                    The Zstandard decoder separately rejects frames that require a history window
+                    larger than 8 MiB.
+                </li>
+                <li>
+                    <code>compressionLevel</code> - the Zstandard compression level.
+                    <br/>
+                    The default value is <code>3</code>.
+                </li>
+            </list>
+            <p>
+                Compression preserves the transport message kind:
+                string messages stay string messages and binary messages stay binary messages,
+                so custom <code>KrpcTransport</code> implementations that support
+                only one kind keep working.
+                Custom codecs can be plugged in by implementing <code>KrpcMessageCodec</code>
+                and setting <code>messageCompression</code> directly.
+            </p>
+            <p>
+                Invalid or over-limit compressed envelopes terminate the connection.
+                This fails pending calls instead of leaving them suspended without a response.
+                At most two compressed envelopes are decoded concurrently within a process,
+                bounding aggregate decompression allocations across concurrent connections.
+            </p>
+        </chapter>
     </chapter>
 </topic>
